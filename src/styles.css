@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Override highlight.js styles */
+.hljs {
+  background: #ffffff !important;
+  color: #111827 !important;
+}
+
+.dark .hljs {
+  background: #111827 !important;
+  color: #e5e7eb !important;
+}
+
+/* Ensure code blocks have white background in light mode */
+pre {
+  background: #ffffff !important;
+}
+
+pre code {
+  background: #ffffff !important;
+}
+
+.dark pre {
+  background: #111827 !important;
+}
+
+.dark pre code {
+  background: #111827 !important;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(to right, #ffffff, #f9fafb);
+}
+
+.dark body {
+  background: linear-gradient(to right, #1f2937, #111827);
+}
+
+@keyframes sheen {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.sheen {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 200% 100%;
+  animation: sheen 3s infinite;
+} 
