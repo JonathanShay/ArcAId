@@ -1,8 +1,11 @@
 import { Routes } from '@angular/router';
 import { AboutComponent } from './components/about/about.component';
 import { LandingComponent } from './components/landing/landing.component';
+import { UltimateTicTacToeComponent } from './components/ultimate-tic-tac-toe/ultimate-tic-tac-toe.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
-  { path: 'about', component: AboutComponent }
+  { path: 'about', component: AboutComponent },
+  { path: 'games/ultimate-tic-tac-toe', component: UltimateTicTacToeComponent },
+  { path: '**', redirectTo: '' }
 ]; 
