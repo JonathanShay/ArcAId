@@ -35,3 +35,4 @@ coverage/
 
 # Pack files
 *.pack
+*.pack.old
