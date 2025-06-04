@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { GameDiscoveryService, GameMetadata } from '../../services/game-discovery.service';
+import { UltimateTicTacToePreviewComponent } from '../ultimate-tic-tac-toe/components/ultimate-tic-tac-toe-preview.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, UltimateTicTacToePreviewComponent],
   template: `
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
       <div class="px-4 py-6 sm:px-0">
@@ -91,7 +92,12 @@ import { GameDiscoveryService, GameMetadata } from '../../services/game-discover
                   <div *ngFor="let game of games" class="relative group">
                     <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg opacity-20 group-hover:opacity-30 transition duration-300"></div>
                     <div class="relative rounded-lg p-6 bg-white dark:bg-gray-800">
-                      <img [src]="game.thumbnail" [alt]="game.title" class="w-full h-48 object-cover rounded-lg mb-4">
+                      <ng-container *ngIf="game.title === 'Ultimate Tic-Tac-Toe'; else gameImage">
+                        <app-ultimate-tic-tac-toe-preview></app-ultimate-tic-tac-toe-preview>
+                      </ng-container>
+                      <ng-template #gameImage>
+                        <img [src]="game.thumbnail" [alt]="game.title" class="w-full h-48 object-cover rounded-lg mb-4">
+                      </ng-template>
                       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">{{ game.title }}</h3>
                       <p class="text-gray-600 dark:text-gray-300 mb-4">{{ game.description }}</p>
                       <div class="flex flex-wrap gap-2 mb-4">
