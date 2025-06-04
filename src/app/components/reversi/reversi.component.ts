@@ -390,17 +390,16 @@ export class ReversiComponent implements OnInit {
   }
 
   isComputerMove(row: number, col: number): boolean {
-    if (!this.lastComputerMove) return false;
-    return this.lastComputerMove.row === row && this.lastComputerMove.col === col;
+    return this.lastComputerMove?.row === row && this.lastComputerMove?.col === col;
+  }
+
+  onHistoryHover(move: Move | undefined): void {
+    this.hoveredMove = move || null;
   }
 
   isHoveredMove(row: number, col: number): boolean {
     if (!this.hoveredMove) return false;
     return this.hoveredMove.row === row && this.hoveredMove.col === col;
-  }
-
-  onHistoryHover(move: Move | undefined): void {
-    this.hoveredMove = move || null;
   }
 
   toggleHistory(): void {

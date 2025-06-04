@@ -1,15 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-
-export interface GameMetadata {
-  title: string;
-  description: string;
-  thumbnail: string;
-  route: string;
-  tags: string[];
-  difficulty: 'easy' | 'medium' | 'hard';
-  estimatedPlayTime: string;
-}
+import { GameMetadata } from './models/game-metadata.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,22 +18,34 @@ export class GameDiscoveryService {
     // For now, we'll manually register the games
     const games: GameMetadata[] = [
       {
+        id: 'ultimate-tic-tac-toe',
         title: 'Ultimate Tic-Tac-Toe',
-        description: 'A strategic twist on the classic game of Tic-Tac-Toe. Play on a 3x3 grid of 3x3 boards!',
-        thumbnail: 'assets/images/ultimate-tic-tac-toe-thumbnail.png',
+        description: 'A strategic twist on the classic game of Tic-Tac-Toe. Play on a 3x3 grid of Tic-Tac-Toe boards.',
+        thumbnail: 'assets/images/ultimate-tic-tac-toe.png',
         route: '/games/ultimate-tic-tac-toe',
-        tags: ['strategy', 'board-game', 'multiplayer'],
+        tags: ['strategy', 'classic', 'multiplayer'],
         difficulty: 'medium',
-        estimatedPlayTime: '10-15 minutes'
+        estimatedPlaytime: '10-15 minutes'
       },
       {
+        id: 'reversi',
         title: 'Reversi',
-        description: 'A classic strategy game where you flip your opponent\'s pieces to claim them as your own. Play against the computer!',
-        thumbnail: 'assets/images/reversi-thumbnail.png',
+        description: 'A classic strategy game where players take turns placing pieces on the board, flipping opponent pieces.',
+        thumbnail: 'assets/images/reversi.png',
         route: '/games/reversi',
-        tags: ['strategy', 'board-game', 'single-player'],
+        tags: ['strategy', 'classic', 'multiplayer'],
         difficulty: 'medium',
-        estimatedPlayTime: '5-10 minutes'
+        estimatedPlaytime: '15-20 minutes'
+      },
+      {
+        id: 'checkers',
+        title: 'Checkers',
+        description: 'A classic board game where players move their pieces diagonally and capture opponent pieces by jumping over them.',
+        thumbnail: 'assets/images/checkers.png',
+        route: '/games/checkers',
+        tags: ['strategy', 'classic', 'multiplayer'],
+        difficulty: 'easy',
+        estimatedPlaytime: '10-15 minutes'
       }
     ];
 
@@ -53,7 +56,7 @@ export class GameDiscoveryService {
     return this.games.asObservable();
   }
 
-  getGameByRoute(route: string): GameMetadata | undefined {
-    return this.games.value.find(game => game.route === route);
+  getGameById(id: string): GameMetadata | undefined {
+    return this.games.value.find(game => game.id === id);
   }
 } 

@@ -1,14 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { GameDiscoveryService, GameMetadata } from '../../services/game-discovery.service';
+import { GameDiscoveryService } from '../../services/game-discovery.service';
+import { GameMetadata } from '../../services/models/game-metadata.model';
 import { UltimateTicTacToePreviewComponent } from '../ultimate-tic-tac-toe/components/ultimate-tic-tac-toe-preview.component';
 import { ReversiPreviewComponent } from '../reversi/reversi-preview.component';
+import { CheckersPreviewComponent } from '../checkers/checkers-preview.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule, UltimateTicTacToePreviewComponent, ReversiPreviewComponent],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    UltimateTicTacToePreviewComponent, 
+    ReversiPreviewComponent,
+    CheckersPreviewComponent
+  ],
   template: `
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
       <div class="px-4 py-6 sm:px-0">
@@ -28,8 +36,13 @@ import { ReversiPreviewComponent } from '../reversi/reversi-preview.component';
                       <app-ultimate-tic-tac-toe-preview></app-ultimate-tic-tac-toe-preview>
                     </ng-container>
                     <ng-template #reversiPreview>
-                      <ng-container *ngIf="game.title === 'Reversi'; else gameImage">
+                      <ng-container *ngIf="game.title === 'Reversi'; else checkersPreview">
                         <app-reversi-preview></app-reversi-preview>
+                      </ng-container>
+                    </ng-template>
+                    <ng-template #checkersPreview>
+                      <ng-container *ngIf="game.title === 'Checkers'; else gameImage">
+                        <app-checkers-preview></app-checkers-preview>
                       </ng-container>
                     </ng-template>
                     <ng-template #gameImage>
@@ -45,7 +58,7 @@ import { ReversiPreviewComponent } from '../reversi/reversi-preview.component';
                     </div>
                     <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                       <span>Difficulty: {{ game.difficulty }}</span>
-                      <span>{{ game.estimatedPlayTime }}</span>
+                      <span>{{ game.estimatedPlaytime }}</span>
                     </div>
                     <a [routerLink]="game.route" 
                        class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-200">
@@ -149,7 +162,7 @@ export class LandingComponent implements OnInit {
 
   constructor(private gameDiscoveryService: GameDiscoveryService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.gameDiscoveryService.getGames().subscribe(games => {
       this.games = games;
     });
