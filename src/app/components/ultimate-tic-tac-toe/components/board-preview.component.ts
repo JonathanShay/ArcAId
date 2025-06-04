@@ -7,7 +7,11 @@ import { SmallBoard } from '../models/game.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="board-preview">
+    <div class="board-preview" [ngClass]="{
+      'border-indigo-600': winner === 'X',
+      'border-amber-500': winner === 'O',
+      'border-gray-300': !winner
+    }">
       <div class="grid-container">
         <ng-container *ngFor="let cellRow of board.cells; let cellRowIndex = index">
           <ng-container *ngFor="let cell of cellRow; let cellColIndex = index">
@@ -39,6 +43,20 @@ import { SmallBoard } from '../models/game.models';
       justify-content: center;
       margin: 0;
       padding: 0;
+      border-width: 2px;
+      border-radius: 0.5rem;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .border-indigo-600 {
+      border-color: #4f46e5 !important;
+    }
+    .border-amber-500 {
+      border-color: #f59e0b !important;
+    }
+    .border-gray-300 {
+      border-color: #d1d5db !important;
     }
 
     .grid-container {
@@ -68,6 +86,7 @@ import { SmallBoard } from '../models/game.models';
 })
 export class BoardPreviewComponent implements OnInit {
   @Input() board!: SmallBoard;
+  @Input() winner: string | null = null;
 
   ngOnInit() {
     console.log('BoardPreview received board:', {

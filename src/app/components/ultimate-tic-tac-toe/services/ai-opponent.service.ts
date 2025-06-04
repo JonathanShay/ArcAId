@@ -8,52 +8,72 @@ export class AIOpponentService {
   constructor() {}
 
   getNextMove(gameState: GameState): Move {
+    console.log('[AIOpponentService] getNextMove called. Current player:', gameState.currentPlayer, 'Active board:', gameState.activeBoard, 'Game status:', gameState.gameStatus);
+    
     // If no active board is specified, we can choose any board
     if (!gameState.activeBoard) {
-      return this.findBestMove(gameState);
+      console.log('[AIOpponentService] No active board specified, finding best move across all boards');
+      const move = this.findBestMove(gameState);
+      console.log('[AIOpponentService] No active board. Chose move:', move);
+      return move;
     }
 
     // If there is an active board, we must play in that board
     const { row: boardRow, col: boardCol } = gameState.activeBoard;
     const board = gameState.boards[boardRow][boardCol];
+    console.log('[AIOpponentService] Active board state:', {
+      position: { row: boardRow, col: boardCol },
+      winner: board.winner,
+      cells: board.cells
+    });
 
     // If the active board is won, we can play anywhere
     if (board.winner) {
-      return this.findBestMove(gameState);
+      console.log('[AIOpponentService] Active board is won, finding best move across all boards');
+      const move = this.findBestMove(gameState);
+      console.log('[AIOpponentService] Active board is won. Chose move:', move);
+      return move;
     }
 
     // Find the best move within the active board
+    console.log('[AIOpponentService] Finding best move within active board');
     const bestCell = this.findBestCellInBoard(board);
-    return {
+    const move = {
       boardRow,
       boardCol,
       cellRow: bestCell.row,
       cellCol: bestCell.col
     };
+    console.log('[AIOpponentService] Chose move in active board:', move);
+    return move;
   }
 
   private findBestMove(gameState: GameState): Move {
+    console.log('[AIOpponentService] findBestMove called');
     let bestScore = -Infinity;
-    let bestMove: Move | null = null;
+    let bestMoves: Move[] = [];
 
     // Try each board
     for (let boardRow = 0; boardRow < 3; boardRow++) {
       for (let boardCol = 0; boardCol < 3; boardCol++) {
         const board = gameState.boards[boardRow][boardCol];
-        
         // Skip boards that are already won
-        if (board.winner) continue;
-
+        if (board.winner) {
+          console.log(`[AIOpponentService] Skipping won board at (${boardRow},${boardCol})`);
+          continue;
+        }
         // Try each cell in the board
         for (let cellRow = 0; cellRow < 3; cellRow++) {
           for (let cellCol = 0; cellCol < 3; cellCol++) {
             if (board.cells[cellRow][cellCol] === null) {
               const move: Move = { boardRow, boardCol, cellRow, cellCol };
               const score = this.evaluateMove(gameState, move);
-              
+              console.log(`[AIOpponentService] Move (${boardRow},${boardCol})->(${cellRow},${cellCol}) scored:`, score);
               if (score > bestScore) {
                 bestScore = score;
-                bestMove = move;
+                bestMoves = [move];
+              } else if (score === bestScore) {
+                bestMoves.push(move);
               }
             }
           }
@@ -62,42 +82,68 @@ export class AIOpponentService {
     }
 
     // If no move was found in unwon boards, try won boards
-    if (!bestMove) {
+    if (bestMoves.length === 0) {
+      console.log('[AIOpponentService] No moves found in unwon boards, searching won boards');
+      let allAvailableMoves: Move[] = [];
       for (let boardRow = 0; boardRow < 3; boardRow++) {
         for (let boardCol = 0; boardCol < 3; boardCol++) {
           const board = gameState.boards[boardRow][boardCol];
           for (let cellRow = 0; cellRow < 3; cellRow++) {
             for (let cellCol = 0; cellCol < 3; cellCol++) {
               if (board.cells[cellRow][cellCol] === null) {
-                return { boardRow, boardCol, cellRow, cellCol };
+                allAvailableMoves.push({ boardRow, boardCol, cellRow, cellCol });
               }
             }
           }
         }
       }
+      if (allAvailableMoves.length > 0) {
+        const move = allAvailableMoves[Math.floor(Math.random() * allAvailableMoves.length)];
+        console.log('[AIOpponentService] Found move in won board:', move);
+        return move;
+      }
     }
 
-    return bestMove!;
+    // Add some randomization to the move selection
+    // 20% chance to pick a random move from the top 3 best moves
+    if (Math.random() < 0.2 && bestMoves.length > 1) {
+      const topMoves = bestMoves.slice(0, Math.min(3, bestMoves.length));
+      const move = topMoves[Math.floor(Math.random() * topMoves.length)];
+      console.log('[AIOpponentService] Randomly selected from top moves:', move);
+      return move;
+    }
+
+    // Otherwise pick randomly among the best moves
+    const move = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    console.log('[AIOpponentService] Selected from best moves:', move);
+    return move;
   }
 
   private findBestCellInBoard(board: SmallBoard): { row: number; col: number } {
+    console.log('[AIOpponentService] findBestCellInBoard called');
     let bestScore = -Infinity;
-    let bestCell = { row: 0, col: 0 };
+    let bestCells: { row: number; col: number }[] = [];
 
     // Try each cell
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
         if (board.cells[row][col] === null) {
           const score = this.evaluateCell(board, row, col);
+          console.log(`[AIOpponentService] Cell (${row},${col}) scored:`, score);
           if (score > bestScore) {
             bestScore = score;
-            bestCell = { row, col };
+            bestCells = [{ row, col }];
+          } else if (score === bestScore) {
+            bestCells.push({ row, col });
           }
         }
       }
     }
 
-    return bestCell;
+    // Pick randomly among the best cells
+    const cell = bestCells[Math.floor(Math.random() * bestCells.length)];
+    console.log('[AIOpponentService] Selected cell:', cell);
+    return cell;
   }
 
   private evaluateMove(gameState: GameState, move: Move): number {
@@ -105,9 +151,9 @@ export class AIOpponentService {
     const board = gameState.boards[move.boardRow][move.boardCol];
     const nextBoard = gameState.boards[move.cellRow][move.cellCol];
 
-    // Prefer moves that don't send opponent to a won board
+    // Prefer moves that don't send opponent to a won board (negative bonus)
     if (nextBoard.winner) {
-      score -= 10;
+      score += 8; // Positive bonus: send opponent to a won/drawn board
     }
 
     // Prefer moves that send opponent to a board with fewer options
@@ -124,14 +170,6 @@ export class AIOpponentService {
       score += 12;
     }
 
-    // Slightly prefer center and corner positions (reduced from 5 to 2)
-    if (move.cellRow === 1 && move.cellCol === 1) {
-      score += 2;
-    } else if ((move.cellRow === 0 || move.cellRow === 2) && 
-               (move.cellCol === 0 || move.cellCol === 2)) {
-      score += 1;
-    }
-
     // Prefer moves that help win the game
     if (this.wouldHelpWinGame(gameState, move)) {
       score += 20;
@@ -142,20 +180,14 @@ export class AIOpponentService {
       score += 18;
     }
 
+    // Add some randomness to the score to make the AI less predictable
+    score += Math.random() * 5;
+
     return score;
   }
 
   private evaluateCell(board: SmallBoard, row: number, col: number): number {
     let score = 0;
-
-    // Slightly prefer center position (reduced from 5 to 2)
-    if (row === 1 && col === 1) {
-      score += 2;
-    }
-    // Slightly prefer corners (reduced from 3 to 1)
-    else if ((row === 0 || row === 2) && (col === 0 || col === 2)) {
-      score += 1;
-    }
 
     // Check if this move would complete a line
     if (this.wouldCompleteLine(board, row, col)) {
@@ -166,6 +198,9 @@ export class AIOpponentService {
     if (this.wouldBlockLine(board, row, col)) {
       score += 12;
     }
+
+    // Add some randomness to make the AI less predictable
+    score += Math.random() * 3;
 
     return score;
   }
