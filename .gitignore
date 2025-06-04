@@ -36,3 +36,4 @@ coverage/
 # Pack files
 *.pack
 *.pack.old
+.angular/cache/
