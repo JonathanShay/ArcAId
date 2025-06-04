@@ -24,7 +24,7 @@ export class GameDiscoveryService {
 
   private discoverGames(): void {
     // In a real implementation, this would scan for game components
-    // For now, we'll manually register the Ultimate Tic-Tac-Toe game
+    // For now, we'll manually register the games
     const games: GameMetadata[] = [
       {
         title: 'Ultimate Tic-Tac-Toe',
@@ -34,6 +34,15 @@ export class GameDiscoveryService {
         tags: ['strategy', 'board-game', 'multiplayer'],
         difficulty: 'medium',
         estimatedPlayTime: '10-15 minutes'
+      },
+      {
+        title: 'Reversi',
+        description: 'A classic strategy game where you flip your opponent\'s pieces to claim them as your own. Play against the computer!',
+        thumbnail: 'assets/images/reversi-thumbnail.png',
+        route: '/games/reversi',
+        tags: ['strategy', 'board-game', 'single-player'],
+        difficulty: 'medium',
+        estimatedPlayTime: '5-10 minutes'
       }
     ];
 

@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { GameDiscoveryService, GameMetadata } from '../../services/game-discovery.service';
 import { UltimateTicTacToePreviewComponent } from '../ultimate-tic-tac-toe/components/ultimate-tic-tac-toe-preview.component';
+import { ReversiPreviewComponent } from '../reversi/reversi-preview.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, UltimateTicTacToePreviewComponent],
+  imports: [CommonModule, RouterModule, UltimateTicTacToePreviewComponent, ReversiPreviewComponent],
   template: `
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
       <div class="px-4 py-6 sm:px-0">
@@ -92,9 +93,14 @@ import { UltimateTicTacToePreviewComponent } from '../ultimate-tic-tac-toe/compo
                   <div *ngFor="let game of games" class="relative group">
                     <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg opacity-20 group-hover:opacity-30 transition duration-300"></div>
                     <div class="relative rounded-lg p-6 bg-white dark:bg-gray-800">
-                      <ng-container *ngIf="game.title === 'Ultimate Tic-Tac-Toe'; else gameImage">
+                      <ng-container *ngIf="game.title === 'Ultimate Tic-Tac-Toe'; else reversiPreview">
                         <app-ultimate-tic-tac-toe-preview></app-ultimate-tic-tac-toe-preview>
                       </ng-container>
+                      <ng-template #reversiPreview>
+                        <ng-container *ngIf="game.title === 'Reversi'; else gameImage">
+                          <app-reversi-preview></app-reversi-preview>
+                        </ng-container>
+                      </ng-template>
                       <ng-template #gameImage>
                         <img [src]="game.thumbnail" [alt]="game.title" class="w-full h-48 object-cover rounded-lg mb-4">
                       </ng-template>
