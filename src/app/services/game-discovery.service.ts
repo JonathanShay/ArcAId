@@ -46,6 +46,16 @@ export class GameDiscoveryService {
         tags: ['strategy', 'classic', 'multiplayer'],
         difficulty: 'easy',
         estimatedPlaytime: '10-15 minutes'
+      },
+      {
+        id: 'chess',
+        title: 'Chess',
+        description: 'The classic game of strategy and tactics. Play against a friend or challenge yourself against the computer.',
+        thumbnail: 'assets/images/chess.png',
+        route: '/games/chess',
+        tags: ['strategy', 'classic', 'multiplayer'],
+        difficulty: 'hard',
+        estimatedPlaytime: '30-60 minutes'
       }
     ];
 

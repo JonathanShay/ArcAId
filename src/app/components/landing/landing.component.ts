@@ -6,6 +6,7 @@ import { GameMetadata } from '../../services/models/game-metadata.model';
 import { UltimateTicTacToePreviewComponent } from '../ultimate-tic-tac-toe/components/ultimate-tic-tac-toe-preview.component';
 import { ReversiPreviewComponent } from '../reversi/reversi-preview.component';
 import { CheckersPreviewComponent } from '../checkers/checkers-preview.component';
+import { ChessPreviewComponent } from '../chess/chess-preview.component';
 
 @Component({
   selector: 'app-landing',
@@ -15,7 +16,8 @@ import { CheckersPreviewComponent } from '../checkers/checkers-preview.component
     RouterModule, 
     UltimateTicTacToePreviewComponent, 
     ReversiPreviewComponent,
-    CheckersPreviewComponent
+    CheckersPreviewComponent,
+    ChessPreviewComponent
   ],
   template: `
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
@@ -41,8 +43,13 @@ import { CheckersPreviewComponent } from '../checkers/checkers-preview.component
                       </ng-container>
                     </ng-template>
                     <ng-template #checkersPreview>
-                      <ng-container *ngIf="game.title === 'Checkers'; else gameImage">
+                      <ng-container *ngIf="game.title === 'Checkers'; else chessPreview">
                         <app-checkers-preview></app-checkers-preview>
+                      </ng-container>
+                    </ng-template>
+                    <ng-template #chessPreview>
+                      <ng-container *ngIf="game.title === 'Chess'; else gameImage">
+                        <app-chess-preview></app-chess-preview>
                       </ng-container>
                     </ng-template>
                     <ng-template #gameImage>
