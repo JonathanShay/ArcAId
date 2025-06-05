@@ -113,31 +113,28 @@ export class GameService {
 
   private applyMove(state: GameState, column: number): GameState {
     const newState = { ...state };
-    newState.board = state.board.map(row => [...row]);
+    newState.board = state.board.map((row: (Player | null)[]) => [...row]);
     
     // Find the lowest empty row in the selected column
-    let row = this.ROWS - 1;
-    while (row >= 0 && newState.board[row][column] !== null) {
-      row--;
+    for (let row = 5; row >= 0; row--) {
+      if (newState.board[row][column] === null) {
+        newState.board[row][column] = state.currentPlayer;
+        newState.lastMove = { column, player: state.currentPlayer };
+        break;
+      }
     }
     
-    // Place the piece
-    newState.board[row][column] = state.currentPlayer;
-    
     // Update game state
-    newState.lastMove = { column, player: state.currentPlayer };
     newState.currentPlayer = state.currentPlayer === 'R' ? 'Y' : 'R';
+    newState.validMoves = this.getValidMoves(newState.board);
     
     // Check for win or draw
-    if (this.checkWin(newState.board, row, column)) {
+    const gameResult = this.checkGameResult(newState.board);
+    if (gameResult.won) {
       newState.gameStatus = 'won';
-      newState.winner = state.currentPlayer;
-      newState.validMoves = [];
-    } else if (this.checkDraw(newState.board)) {
+      newState.winner = gameResult.winner;
+    } else if (gameResult.draw) {
       newState.gameStatus = 'draw';
-      newState.validMoves = [];
-    } else {
-      newState.validMoves = this.getValidMoves(newState.board);
     }
     
     return newState;
@@ -244,35 +241,68 @@ export class GameService {
     sound.play().catch(err => console.log('Audio play failed:', err));
   }
 
+  private getComputerMove(state: GameState): number | null {
+    if (state.validMoves.length === 0) {
+      return null;
+    }
+
+    // Try to win
+    for (const col of state.validMoves) {
+      const testState = this.applyMove(state, col);
+      if (testState.gameStatus === 'won' && testState.winner === this.computerPlayer) {
+        return col;
+      }
+    }
+
+    // Try to block opponent
+    for (const col of state.validMoves) {
+      const testState = this.applyMove(state, col);
+      if (testState.gameStatus === 'won' && testState.winner !== this.computerPlayer) {
+        return col;
+      }
+    }
+
+    // Make a random valid move
+    return state.validMoves[Math.floor(Math.random() * state.validMoves.length)];
+  }
+
   private makeComputerMove(): void {
-    const currentState = this.gameStateSubject.value;
-    if (currentState.gameStatus !== 'playing' || currentState.validMoves.length === 0) {
+    const state = this.gameStateSubject.value;
+    if (state.gameStatus !== 'playing' || state.currentPlayer !== this.computerPlayer) {
       return;
     }
 
-    // Simple AI: Try to win, then block opponent, then random valid move
-    const column = this.findBestMove(currentState);
-    this.makeMove(column);
+    const column = this.getComputerMove(state);
+    if (column !== null) {
+      this.makeMove(column);
+    }
   }
 
-  private findBestMove(state: GameState): number {
-    // First, check if we can win
-    for (const col of state.validMoves) {
-      const tempState = this.applyMove({ ...state }, col);
-      if (tempState.gameStatus === 'won' && tempState.winner === this.computerPlayer) {
-        return col;
+  private checkGameResult(board: (Player | null)[][]): { won: boolean; winner: Player | null; draw: boolean } {
+    const result = { won: false, winner: null as Player | null, draw: false };
+
+    // Check for win
+    for (let row = 0; row < this.ROWS; row++) {
+      for (let col = 0; col < this.COLS; col++) {
+        if (board[row][col] !== null && this.checkWin(board, row, col)) {
+          result.won = true;
+          result.winner = board[row][col];
+          return result;
+        }
       }
     }
 
-    // Then, check if we need to block opponent
-    for (const col of state.validMoves) {
-      const tempState = this.applyMove({ ...state }, col);
-      if (tempState.gameStatus === 'won' && tempState.winner !== this.computerPlayer) {
-        return col;
-      }
+    // Check for draw
+    if (this.checkDraw(board)) {
+      result.draw = true;
+      return result;
     }
 
-    // Otherwise, pick a random valid move
-    return state.validMoves[Math.floor(Math.random() * state.validMoves.length)];
+    return result;
+  }
+
+  private getLastMove(): Move | null {
+    const state = this.gameStateSubject.value;
+    return state.lastMove;
   }
 } 

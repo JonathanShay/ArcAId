@@ -5,6 +5,7 @@ import { UltimateTicTacToeComponent } from './components/ultimate-tic-tac-toe/ul
 import { ReversiComponent } from './components/reversi/reversi.component';
 import { CheckersComponent } from './components/checkers/checkers.component';
 import { ChessComponent } from './components/chess/chess.component';
+import { ConnectFourComponent } from './components/connect-four/connect-four.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'games/reversi', component: ReversiComponent },
   { path: 'games/checkers', component: CheckersComponent },
   { path: 'games/chess', component: ChessComponent },
+  { path: 'games/connect-four', component: ConnectFourComponent },
   { path: '**', redirectTo: '' }
 ]; 

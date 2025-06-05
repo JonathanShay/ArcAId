@@ -56,6 +56,16 @@ export class GameDiscoveryService {
         tags: ['strategy', 'classic', 'multiplayer'],
         difficulty: 'hard',
         estimatedPlaytime: '30-60 minutes'
+      },
+      {
+        id: 'connect-four',
+        title: 'Connect Four',
+        description: 'A classic vertical strategy game where players try to connect four of their pieces in a row.',
+        thumbnail: 'preview',
+        route: '/games/connect-four',
+        tags: ['strategy', 'classic', 'multiplayer'],
+        difficulty: 'easy',
+        estimatedPlaytime: '5-10 minutes'
       }
     ];
 

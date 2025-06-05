@@ -7,6 +7,7 @@ import { UltimateTicTacToePreviewComponent } from '../ultimate-tic-tac-toe/compo
 import { ReversiPreviewComponent } from '../reversi/reversi-preview.component';
 import { CheckersPreviewComponent } from '../checkers/checkers-preview.component';
 import { ChessPreviewComponent } from '../chess/chess-preview.component';
+import { ConnectFourPreviewComponent } from '../connect-four/connect-four-preview.component';
 
 @Component({
   selector: 'app-landing',
@@ -17,7 +18,8 @@ import { ChessPreviewComponent } from '../chess/chess-preview.component';
     UltimateTicTacToePreviewComponent, 
     ReversiPreviewComponent,
     CheckersPreviewComponent,
-    ChessPreviewComponent
+    ChessPreviewComponent,
+    ConnectFourPreviewComponent
   ],
   template: `
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
@@ -48,8 +50,13 @@ import { ChessPreviewComponent } from '../chess/chess-preview.component';
                       </ng-container>
                     </ng-template>
                     <ng-template #chessPreview>
-                      <ng-container *ngIf="game.title === 'Chess'; else gameImage">
+                      <ng-container *ngIf="game.title === 'Chess'; else connectFourPreview">
                         <app-chess-preview></app-chess-preview>
+                      </ng-container>
+                    </ng-template>
+                    <ng-template #connectFourPreview>
+                      <ng-container *ngIf="game.title === 'Connect Four'; else gameImage">
+                        <app-connect-four-preview></app-connect-four-preview>
                       </ng-container>
                     </ng-template>
                     <ng-template #gameImage>

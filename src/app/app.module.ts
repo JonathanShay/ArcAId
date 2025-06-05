@@ -7,6 +7,9 @@ import { AboutComponent } from './components/about/about.component';
 import { UltimateTicTacToeComponent } from './components/ultimate-tic-tac-toe/ultimate-tic-tac-toe.component';
 import { ReversiComponent } from './components/reversi/reversi.component';
 import { CheckersComponent } from './components/checkers/checkers.component';
+import { ChessComponent } from './components/chess/chess.component';
+import { ConnectFourComponent } from './components/connect-four/connect-four.component';
+import { ConnectFourPreviewComponent } from './components/connect-four/connect-four-preview.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +18,10 @@ import { CheckersComponent } from './components/checkers/checkers.component';
     AboutComponent,
     UltimateTicTacToeComponent,
     ReversiComponent,
-    CheckersComponent
+    CheckersComponent,
+    ChessComponent,
+    ConnectFourComponent,
+    ConnectFourPreviewComponent
   ],
   imports: [
     BrowserModule,
