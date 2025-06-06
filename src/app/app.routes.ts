@@ -6,6 +6,7 @@ import { ReversiComponent } from './components/reversi/reversi.component';
 import { CheckersComponent } from './components/checkers/checkers.component';
 import { ChessComponent } from './components/chess/chess.component';
 import { ConnectFourComponent } from './components/connect-four/connect-four.component';
+import { EffectivePromptsComponent } from './components/effective-prompts/effective-prompts.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -15,5 +16,6 @@ export const routes: Routes = [
   { path: 'games/checkers', component: CheckersComponent },
   { path: 'games/chess', component: ChessComponent },
   { path: 'games/connect-four', component: ConnectFourComponent },
+  { path: 'effective-prompts', component: EffectivePromptsComponent },
   { path: '**', redirectTo: '' }
 ]; 

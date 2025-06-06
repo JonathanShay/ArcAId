@@ -1,0 +1,393 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f6f8fc 0%, #e9f0f7 100%);
+}
+
+:host.dark {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+/* Highlight.js styles */
+:host ::ng-deep .hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #24292e;
+  background: #f6f8fa;
+}
+
+:host ::ng-deep .hljs-comment,
+:host ::ng-deep .hljs-quote {
+  color: #6a737d;
+  font-style: italic;
+}
+
+:host ::ng-deep .hljs-keyword,
+:host ::ng-deep .hljs-selector-tag,
+:host ::ng-deep .hljs-subst {
+  color: #d73a49;
+}
+
+:host ::ng-deep .hljs-literal,
+:host ::ng-deep .hljs-number,
+:host ::ng-deep .hljs-doctag,
+:host ::ng-deep .hljs-formula {
+  color: #005cc5;
+}
+
+:host ::ng-deep .hljs-string,
+:host ::ng-deep .hljs-regexp,
+:host ::ng-deep .hljs-template-variable,
+:host ::ng-deep .hljs-variable {
+  color: #032f62;
+}
+
+:host ::ng-deep .hljs-title,
+:host ::ng-deep .hljs-section,
+:host ::ng-deep .hljs-selector-id,
+:host ::ng-deep .hljs-selector-class {
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+:host ::ng-deep .hljs-type,
+:host ::ng-deep .hljs-class .hljs-title {
+  color: #6f42c1;
+}
+
+:host ::ng-deep .hljs-tag,
+:host ::ng-deep .hljs-name,
+:host ::ng-deep .hljs-attribute {
+  color: #22863a;
+  font-weight: normal;
+}
+
+:host ::ng-deep .hljs-meta,
+:host ::ng-deep .hljs-meta .hljs-keyword {
+  color: #6a737d;
+}
+
+:host ::ng-deep .hljs-emphasis {
+  font-style: italic;
+}
+
+:host ::ng-deep .hljs-strong {
+  font-weight: bold;
+}
+
+/* Dark mode highlight.js styles */
+:host.dark ::ng-deep .hljs {
+  color: #e6edf3;
+  background: #0d1117;
+}
+
+:host.dark ::ng-deep .hljs-comment,
+:host.dark ::ng-deep .hljs-quote {
+  color: #8b949e;
+}
+
+:host.dark ::ng-deep .hljs-keyword,
+:host.dark ::ng-deep .hljs-selector-tag,
+:host.dark ::ng-deep .hljs-subst {
+  color: #ff7b72;
+}
+
+:host.dark ::ng-deep .hljs-literal,
+:host.dark ::ng-deep .hljs-number,
+:host.dark ::ng-deep .hljs-doctag,
+:host.dark ::ng-deep .hljs-formula {
+  color: #79c0ff;
+}
+
+:host.dark ::ng-deep .hljs-string,
+:host.dark ::ng-deep .hljs-regexp,
+:host.dark ::ng-deep .hljs-template-variable,
+:host.dark ::ng-deep .hljs-variable {
+  color: #a5d6ff;
+}
+
+:host.dark ::ng-deep .hljs-title,
+:host.dark ::ng-deep .hljs-section,
+:host.dark ::ng-deep .hljs-selector-id,
+:host.dark ::ng-deep .hljs-selector-class {
+  color: #d2a8ff;
+}
+
+:host.dark ::ng-deep .hljs-type,
+:host.dark ::ng-deep .hljs-class .hljs-title {
+  color: #d2a8ff;
+}
+
+:host.dark ::ng-deep .hljs-tag,
+:host.dark ::ng-deep .hljs-name,
+:host.dark ::ng-deep .hljs-attribute {
+  color: #7ee787;
+}
+
+:host.dark ::ng-deep .hljs-meta,
+:host.dark ::ng-deep .hljs-meta .hljs-keyword {
+  color: #8b949e;
+}
+
+/* Rest of the existing styles */
+.prose {
+  color: #374151;
+}
+
+.dark .prose {
+  color: #e5e7eb;
+}
+
+.prose h1 {
+  color: #1f2937;
+  font-size: 1.5em;
+  margin-top: 0;
+}
+
+.dark .prose h1 {
+  color: #f3f4f6;
+}
+
+.prose h2 {
+  color: #1f2937;
+  font-size: 1.25em;
+  margin-top: 1.5em;
+}
+
+.dark .prose h2 {
+  color: #f3f4f6;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin: 0.5em 0;
+}
+
+.prose strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.dark .prose strong {
+  color: #f3f4f6;
+}
+
+.prose code {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.875em;
+}
+
+.dark .prose code {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+/* Card hover effects */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Code block wrapper */
+.code-block-wrapper {
+  position: relative;
+}
+
+/* Scrollbar styling */
+:host ::ng-deep .prose pre {
+  margin: 0 !important;
+  padding: 1rem !important;
+  background-color: transparent !important;
+  max-height: 20em !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: #818cf8 #f8fafc;
+}
+
+:host ::ng-deep .prose pre::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+:host ::ng-deep .prose pre::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+:host ::ng-deep .prose pre::-webkit-scrollbar-thumb {
+  background: #818cf8;
+  border-radius: 4px;
+  border: 2px solid #f8fafc;
+  transition: background-color 0.2s ease;
+}
+
+:host ::ng-deep .prose pre::-webkit-scrollbar-thumb:hover {
+  background: #6366f1;
+}
+
+/* Dark mode scrollbar styling */
+:host ::ng-deep .dark .prose pre {
+  scrollbar-color: #818cf8 #1e1b4b;
+}
+
+:host ::ng-deep .dark .prose pre::-webkit-scrollbar-track {
+  background: #1e1b4b;
+}
+
+:host ::ng-deep .dark .prose pre::-webkit-scrollbar-thumb {
+  background: #818cf8;
+  border: 2px solid #1e1b4b;
+}
+
+:host ::ng-deep .dark .prose pre::-webkit-scrollbar-thumb:hover {
+  background: #6366f1;
+}
+
+/* Code block styling */
+:host ::ng-deep .prose pre code {
+  padding: 0 !important;
+  background-color: transparent !important;
+}
+
+/* Dark mode adjustments */
+:host ::ng-deep .dark .prose pre {
+  background-color: #2d2d2d !important;
+}
+
+:host ::ng-deep .dark .prose pre code {
+  color: #ccc !important;
+}
+
+/* Syntax highlighting */
+:host ::ng-deep .token.comment,
+:host ::ng-deep .token.prolog,
+:host ::ng-deep .token.doctype,
+:host ::ng-deep .token.cdata {
+  color: #8e908c;
+}
+
+:host ::ng-deep .token.namespace {
+  opacity: .7;
+}
+
+:host ::ng-deep .token.string,
+:host ::ng-deep .token.attr-value {
+  color: #718c00;
+}
+
+:host ::ng-deep .token.punctuation,
+:host ::ng-deep .token.operator {
+  color: #8e908c;
+}
+
+:host ::ng-deep .token.entity,
+:host ::ng-deep .token.url,
+:host ::ng-deep .token.symbol,
+:host ::ng-deep .token.number,
+:host ::ng-deep .token.boolean,
+:host ::ng-deep .token.variable,
+:host ::ng-deep .token.constant,
+:host ::ng-deep .token.property,
+:host ::ng-deep .token.regex,
+:host ::ng-deep .token.inserted {
+  color: #f5871f;
+}
+
+:host ::ng-deep .token.atrule,
+:host ::ng-deep .token.keyword,
+:host ::ng-deep .token.attr-name {
+  color: #8959a8;
+}
+
+:host ::ng-deep .token.function,
+:host ::ng-deep .token.deleted {
+  color: #c82829;
+}
+
+:host ::ng-deep .token.tag,
+:host ::ng-deep .token.selector,
+:host ::ng-deep .token.important {
+  color: #c82829;
+}
+
+:host ::ng-deep .token.important,
+:host ::ng-deep .token.bold {
+  font-weight: bold;
+}
+
+:host ::ng-deep .token.italic {
+  font-style: italic;
+}
+
+/* Dark mode syntax highlighting */
+:host ::ng-deep .dark .token.comment,
+:host ::ng-deep .dark .token.prolog,
+:host ::ng-deep .dark .token.doctype,
+:host ::ng-deep .dark .token.cdata {
+  color: #969896;
+}
+
+:host ::ng-deep .dark .token.string,
+:host ::ng-deep .dark .token.attr-value {
+  color: #b5bd68;
+}
+
+:host ::ng-deep .dark .token.punctuation,
+:host ::ng-deep .dark .token.operator {
+  color: #969896;
+}
+
+:host ::ng-deep .dark .token.entity,
+:host ::ng-deep .dark .token.url,
+:host ::ng-deep .dark .token.symbol,
+:host ::ng-deep .dark .token.number,
+:host ::ng-deep .dark .token.boolean,
+:host ::ng-deep .dark .token.variable,
+:host ::ng-deep .dark .token.constant,
+:host ::ng-deep .dark .token.property,
+:host ::ng-deep .dark .token.regex,
+:host ::ng-deep .dark .token.inserted {
+  color: #f5871f;
+}
+
+:host ::ng-deep .dark .token.atrule,
+:host ::ng-deep .dark .token.keyword,
+:host ::ng-deep .dark .token.attr-name {
+  color: #b294bb;
+}
+
+:host ::ng-deep .dark .token.function,
+:host ::ng-deep .dark .token.deleted {
+  color: #cc6666;
+}
+
+:host ::ng-deep .dark .token.tag,
+:host ::ng-deep .dark .token.selector,
+:host ::ng-deep .dark .token.important {
+  color: #cc6666;
+}

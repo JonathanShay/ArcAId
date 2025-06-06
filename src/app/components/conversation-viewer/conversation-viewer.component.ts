@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ConversationService, Conversation } from '../../services/conversation.service';
-import { MarkdownModule, provideMarkdown } from 'ngx-markdown';
+import { MarkdownModule } from 'ngx-markdown';
 import { marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import * as Prism from 'prismjs';
@@ -25,9 +25,6 @@ marked.use(markedHighlight({
   selector: 'app-conversation-viewer',
   standalone: true,
   imports: [CommonModule, MarkdownModule],
-  providers: [
-    provideMarkdown()
-  ],
   template: `
     <div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <!-- Background overlay -->

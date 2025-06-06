@@ -10,6 +10,9 @@ import { CheckersComponent } from './components/checkers/checkers.component';
 import { ChessComponent } from './components/chess/chess.component';
 import { ConnectFourComponent } from './components/connect-four/connect-four.component';
 import { ConnectFourPreviewComponent } from './components/connect-four/connect-four-preview.component';
+import { ConversationSnippetsComponent } from './components/conversation-snippets/conversation-snippets.component';
+import { HttpClientModule } from '@angular/common/http';
+import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
   declarations: [
@@ -25,7 +28,10 @@ import { ConnectFourPreviewComponent } from './components/connect-four/connect-f
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule,
+    MarkdownModule.forRoot(),
+    ConversationSnippetsComponent
   ],
   providers: [],
   bootstrap: [AppComponent]
