@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { GameService } from './services/game.service';
-import { GameState, Move, Player } from './models/game.models';
+import { GameState, Move, Player, DifficultyLevel } from './models/game.models';
+import { PersistenceService } from '../../services/persistence.service';
+import { SoundService } from '../../services/sound.service';
 
 @Component({
   selector: 'app-reversi',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
@@ -21,12 +24,41 @@ import { GameState, Move, Player } from './models/game.models';
           </div>
           <button (click)="resetScores()" class="ml-6 px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-semibold">Reset</button>
         </div>
+
+        <div class="overall-scoreboard bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 mb-6 shadow-lg">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Overall Scoreboard</h2>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="text-center">
+              <div class="text-sm text-gray-600 dark:text-gray-400">Black Wins</div>
+              <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ scoreboard.black }}</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm text-gray-600 dark:text-gray-400">White Wins</div>
+              <div class="text-2xl font-bold text-gray-500 dark:text-gray-300">{{ scoreboard.white }}</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm text-gray-600 dark:text-gray-400">Draws</div>
+              <div class="text-2xl font-bold text-gray-600 dark:text-gray-400">{{ scoreboard.draws }}</div>
+            </div>
+          </div>
+        </div>
+
         <div class="relative group">
           <div class="absolute -inset-0.5 bg-gradient-to-r from-gray-600 to-gray-800 dark:from-gray-400 dark:to-gray-600 rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-300"></div>
           <div class="relative rounded-lg transition-all duration-300 ease-in-out bg-white/80 dark:bg-gray-800/80 shadow-lg p-6">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Reversi</h1>
-              <div class="flex gap-2">
+              <div class="flex flex-wrap gap-2 items-center">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-600 dark:text-gray-300">Difficulty:</span>
+                  <select [(ngModel)]="gameState.difficulty" 
+                          (change)="onDifficultyChange($event)"
+                          class="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
                 <button (click)="toggleHistory()" 
                         class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 flex items-center gap-2">
                   <span>{{ isHistoryVisible ? 'Hide' : 'Show' }} History</span>
@@ -48,6 +80,22 @@ import { GameState, Move, Player } from './models/game.models';
               </div>
             </div>
             
+            <div class="game-stats flex justify-center gap-8 mb-6 text-sm text-gray-600 dark:text-gray-300">
+              <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Time: {{ formatTime(gameState.gameTime) }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>Moves: {{ gameState.moveCount }}</span>
+              </div>
+            </div>
+
             <div class="game-status mb-6 text-center">
               <p *ngIf="gameState.gameStatus === 'playing'" class="text-lg text-gray-700 dark:text-gray-300">
                 Current Player: <span class="font-bold" [class.text-gray-900]="gameState.currentPlayer === 'B'" 
@@ -63,13 +111,13 @@ import { GameState, Move, Player } from './models/game.models';
               </p>
             </div>
 
-            <div class="game-flex-container" [class.history-hidden]="!isHistoryVisible">
-              <div class="game-container" [class.expanded]="!isHistoryVisible">
-                <div class="reversi-board">
-                  <div class="grid grid-cols-8 gap-0.5 bg-green-800 p-2 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-8 transition-all duration-300">
+              <div class="flex items-start justify-center">
+                <div class="w-full max-w-[600px] aspect-square">
+                  <div class="grid grid-cols-8 gap-0.5 bg-green-800 p-2 rounded-lg h-full">
                     <ng-container *ngFor="let row of gameState.board; let rowIndex = index">
                       <ng-container *ngFor="let cell of row; let colIndex = index">
-                        <div class="relative aspect-square cell-wrapper">
+                        <div class="relative aspect-square">
                           <button class="w-full h-full flex items-center justify-center rounded-md transition-colors duration-200"
                                   [ngClass]="{
                                     'bg-green-700': !cell && !isValidMove(rowIndex, colIndex),
@@ -78,7 +126,8 @@ import { GameState, Move, Player } from './models/game.models';
                                     'cursor-not-allowed': !isValidMove(rowIndex, colIndex),
                                     'computer-move': isComputerMove(rowIndex, colIndex),
                                     'history-hover-black': isHoveredMove(rowIndex, colIndex) && hoveredMove?.player === 'B',
-                                    'history-hover-white': isHoveredMove(rowIndex, colIndex) && hoveredMove?.player === 'W'
+                                    'history-hover-white': isHoveredMove(rowIndex, colIndex) && hoveredMove?.player === 'W',
+                                    'last-move': isLastMove(rowIndex, colIndex)
                                   }"
                                   (click)="makeMove(rowIndex, colIndex)"
                                   [disabled]="!isValidMove(rowIndex, colIndex)">
@@ -97,8 +146,11 @@ import { GameState, Move, Player } from './models/game.models';
                   </div>
                 </div>
               </div>
-              <div class="history-panel" [class.slide-out]="!isHistoryVisible">
-                <div class="flex items-center justify-between mb-2">
+              <div class="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-lg p-2 overflow-hidden transition-all duration-300 flex flex-col md:h-[600px]"
+                   [class.opacity-0]="!isHistoryVisible"
+                   [class.w-0]="!isHistoryVisible"
+                   [class.p-0]="!isHistoryVisible">
+                <div class="flex items-center justify-between mb-2 flex-shrink-0">
                   <h2 class="text-lg font-semibold">Game History</h2>
                   <div class="flex items-center">
                     <button (click)="copyGameHistory()" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm font-semibold flex items-center gap-2">
@@ -108,9 +160,9 @@ import { GameState, Move, Player } from './models/game.models';
                     <span *ngIf="copyMessage" class="ml-3 text-green-600 dark:text-green-400 font-semibold">{{ copyMessage }}</span>
                   </div>
                 </div>
-                <div class="history-list">
+                <div class="overflow-y-auto flex-grow">
                   <div *ngFor="let entry of gameService.getGameStateHistory(); let i = index" 
-                       class="history-entry"
+                       class="mb-2 pb-2 cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
                        (mouseenter)="onHistoryHover(entry.move)"
                        (mouseleave)="onHistoryHover(undefined)">
                     <div class="font-mono text-xs text-gray-700 dark:text-gray-200">Move #{{ i + 1 }}</div>
@@ -130,38 +182,6 @@ import { GameState, Move, Player } from './models/game.models';
     </div>
   `,
   styles: [`
-    :host {
-      display: block;
-    }
-
-    .game-flex-container {
-      display: flex;
-      flex-direction: row;
-      gap: 2rem;
-      transition: all 0.3s ease-in-out;
-      width: 100%;
-    }
-
-    .game-container {
-      min-width: 0;
-      flex: 1 1 0%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease-in-out;
-      padding: 0.5rem;
-    }
-
-    .game-container.expanded {
-      max-width: 100%;
-    }
-
-    .reversi-board {
-      width: 100%;
-      max-width: 600px;
-      aspect-ratio: 1;
-    }
-
     @keyframes flash {
       0% {
         transform: scale(1);
@@ -178,44 +198,35 @@ import { GameState, Move, Player } from './models/game.models';
       animation: flash 0.5s ease-in-out;
     }
 
-    .history-panel {
-      width: 320px;
-      max-width: 100vw;
-      background: rgba(243,244,246,0.7);
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      padding: 1rem;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      max-height: 480px;
-      transition: all 0.3s ease-in-out;
-      transform: translateX(0);
+    .last-move {
+      position: relative;
     }
 
-    .history-panel.slide-out {
-      transform: translateX(100%);
-      width: 0;
-      padding: 0;
-      margin: 0;
-      opacity: 0;
+    .last-move::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 0.375rem;
+      animation: pulse 2s infinite;
     }
 
-    .history-list {
-      overflow-y: auto;
-      flex: 1 1 0%;
-      min-height: 0;
-    }
-
-    .history-entry {
-      margin-bottom: 0.5rem;
-      padding-bottom: 0.5rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .history-entry:hover {
-      background-color: rgba(0, 0, 0, 0.05);
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.5;
+        transform: scale(1.05);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     @keyframes historyHoverBlack {
@@ -249,140 +260,84 @@ import { GameState, Move, Player } from './models/game.models';
     .history-hover-white {
       animation: historyHoverWhite 2s ease-in-out infinite;
     }
-
-    @media (max-width: 900px) {
-      .game-flex-container {
-        flex-direction: column;
-      }
-      .history-panel {
-        width: 100%;
-        max-width: 100vw;
-        margin-top: 2rem;
-        max-height: 200px;
-      }
-      .history-panel.slide-out {
-        transform: translateY(100%);
-        height: 0;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .game-container {
-        padding: 0.25rem;
-      }
-      .reversi-board {
-        max-width: 100%;
-      }
-    }
   `]
 })
 export class ReversiComponent implements OnInit {
   gameState: GameState;
   lastComputerMove: { row: number; col: number } | null = null;
+  lastPlayerMove: { row: number; col: number } | null = null;
   hoveredMove: Move | null = null;
   isHistoryVisible: boolean = true;
   copyMessage: string = '';
-
-  // Scoreboard state
-  scoreBlack = 0;
-  scoreWhite = 0;
-  scoreDraw = 0;
-
-  // Sound effects
-  private playerBlackMoveSound: HTMLAudioElement;
-  private playerWhiteMoveSound: HTMLAudioElement;
-  private gameWinSound: HTMLAudioElement;
-  private sweepSound: HTMLAudioElement;
+  scoreboard: { black: number; white: number; draws: number } = { black: 0, white: 0, draws: 0 };
   private previousGameStatus: string = 'playing';
 
-  constructor(public gameService: GameService) {
+  constructor(
+    public gameService: GameService,
+    private persistenceService: PersistenceService,
+    private soundService: SoundService
+  ) {
     this.gameState = this.gameService.getInitialState();
     this.gameService.getGameState().subscribe(state => {
       this.gameState = state;
     });
-
-    // Initialize audio elements
-    this.playerBlackMoveSound = new Audio('assets/sounds/click-124467.mp3');
-    this.playerWhiteMoveSound = new Audio('assets/sounds/click-21156.mp3');
-    this.gameWinSound = new Audio('assets/sounds/applause-8-6256.mp3');
-    this.sweepSound = new Audio('assets/sounds/sweep-2637.mp3');
-
-    // Configure audio settings
-    this.playerBlackMoveSound.volume = 0.3;
-    this.playerWhiteMoveSound.volume = 0.3;
-    this.gameWinSound.volume = 0.5;
-    this.sweepSound.volume = 0.4;
   }
 
   ngOnInit() {
-    // Initialize game
+    // Initialize game with saved difficulty
+    const savedDifficulty = this.persistenceService.getDifficulty();
+    this.gameService.setDifficulty(savedDifficulty);
     this.gameService.resetGame();
 
-    // Load scores from localStorage
-    const savedScores = localStorage.getItem('reversi-scoreboard');
-    if (savedScores) {
-      const { scoreBlack, scoreWhite, scoreDraw } = JSON.parse(savedScores);
-      this.scoreBlack = scoreBlack || 0;
-      this.scoreWhite = scoreWhite || 0;
-      this.scoreDraw = scoreDraw || 0;
-    }
+    // Load scoreboard from persistence and ensure all values are numbers
+    const savedScoreboard = this.persistenceService.getScoreboard();
+    this.scoreboard = {
+      black: Number(savedScoreboard.black) || 0,
+      white: Number(savedScoreboard.white) || 0,
+      draws: Number(savedScoreboard.draws) || 0
+    };
 
     // Subscribe to game state changes
     this.gameService.getGameState().subscribe(state => {
       // Play sounds based on game state changes
       if (state.gameStatus === 'won' && this.previousGameStatus === 'playing') {
-        this.playGameWinSound();
-      }
-      this.previousGameStatus = state.gameStatus;
-
-      // Check for game win or draw and update scoreboard
-      if (state.gameStatus === 'won') {
+        this.soundService.playSound('gameWin');
+        // Update scoreboard when game is won
         if (state.winner === 'B') {
-          this.scoreBlack++;
+          this.scoreboard.black = (this.scoreboard.black || 0) + 1;
         } else if (state.winner === 'W') {
-          this.scoreWhite++;
+          this.scoreboard.white = (this.scoreboard.white || 0) + 1;
         }
-        this.saveScores();
-      } else if (state.gameStatus === 'draw') {
-        this.scoreDraw++;
-        this.saveScores();
+        this.persistenceService.saveScoreboard(this.scoreboard);
+      } else if (state.gameStatus === 'draw' && this.previousGameStatus === 'playing') {
+        this.scoreboard.draws = (this.scoreboard.draws || 0) + 1;
+        this.persistenceService.saveScoreboard(this.scoreboard);
       }
 
+      // Play white player's move sound when computer makes a move
+      if (state.lastComputerMove) {
+        this.soundService.playSound('playerWhiteMove');
+        this.lastComputerMove = state.lastComputerMove;
+      }
+
+      this.previousGameStatus = state.gameStatus;
       this.gameState = state;
     });
   }
 
   makeMove(row: number, col: number): void {
     if (this.gameState.currentPlayer === 'B') {
-      this.playPlayerBlackMoveSound();
+      this.soundService.playSound('playerBlackMove');
+      this.lastPlayerMove = { row, col };
     }
     this.gameService.makeMove(row, col);
   }
 
-  private playSound(sound: HTMLAudioElement): void {
-    sound.currentTime = 0;
-    sound.play().catch(err => console.error('Error playing sound:', err));
-  }
-
-  private playPlayerBlackMoveSound(): void {
-    this.playSound(this.playerBlackMoveSound);
-  }
-
-  private playPlayerWhiteMoveSound(): void {
-    this.playSound(this.playerWhiteMoveSound);
-  }
-
-  private playGameWinSound(): void {
-    this.playSound(this.gameWinSound);
-  }
-
-  private playSweepSound(): void {
-    this.playSound(this.sweepSound);
-  }
-
   resetGame(): void {
+    // Don't reset difficulty when resetting game
     this.gameService.resetGame();
     this.lastComputerMove = null;
+    this.lastPlayerMove = null;
   }
 
   isValidMove(row: number, col: number): boolean {
@@ -404,22 +359,7 @@ export class ReversiComponent implements OnInit {
 
   toggleHistory(): void {
     this.isHistoryVisible = !this.isHistoryVisible;
-    this.playSweepSound();
-  }
-
-  private saveScores() {
-    localStorage.setItem('reversi-scoreboard', JSON.stringify({
-      scoreBlack: this.scoreBlack,
-      scoreWhite: this.scoreWhite,
-      scoreDraw: this.scoreDraw
-    }));
-  }
-
-  resetScores(): void {
-    this.scoreBlack = 0;
-    this.scoreWhite = 0;
-    this.scoreDraw = 0;
-    this.saveScores();
+    this.soundService.playSound('sweep');
   }
 
   copyGameHistory(): void {
@@ -446,5 +386,28 @@ export class ReversiComponent implements OnInit {
 
   undo(): void {
     this.gameService.undoLastTurn();
+  }
+
+  onDifficultyChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const difficulty = select.value as DifficultyLevel;
+    this.gameService.setDifficulty(difficulty);
+    this.persistenceService.saveDifficulty(difficulty);
+  }
+
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  isLastMove(row: number, col: number): boolean {
+    return (this.lastPlayerMove?.row === row && this.lastPlayerMove?.col === col) ||
+           (this.lastComputerMove?.row === row && this.lastComputerMove?.col === col);
+  }
+
+  resetScores(): void {
+    this.scoreboard = { black: 0, white: 0, draws: 0 };
+    this.persistenceService.resetScoreboard();
   }
 } 
