@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameService } from './services/game.service';
@@ -115,7 +115,7 @@ import { SoundService } from '../../services/sound.service';
 
             <div class="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-8 transition-all duration-300">
               <div class="flex items-start justify-center">
-                <div class="w-full max-w-[600px] aspect-square">
+                <div class="w-full max-w-[600px] aspect-square" #gameBoard>
                   <div class="grid grid-cols-8 gap-0.5 bg-green-800 p-2 rounded-lg h-full">
                     <ng-container *ngFor="let row of gameState.board; let rowIndex = index">
                       <ng-container *ngFor="let cell of row; let colIndex = index">
@@ -148,10 +148,12 @@ import { SoundService } from '../../services/sound.service';
                   </div>
                 </div>
               </div>
-              <div class="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-lg p-2 overflow-hidden transition-all duration-300 flex flex-col md:h-[600px]"
+              <div class="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-lg p-2 overflow-hidden transition-all duration-300 flex flex-col"
+                   [style]="'height: ' + boardHeight + 'px !important; max-height: ' + boardHeight + 'px !important; min-height: ' + boardHeight + 'px !important'"
                    [class.opacity-0]="!isHistoryVisible"
                    [class.w-0]="!isHistoryVisible"
-                   [class.p-0]="!isHistoryVisible">
+                   [class.p-0]="!isHistoryVisible"
+                   #historyPanel>
                 <div class="flex items-center justify-between mb-2 flex-shrink-0">
                   <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Game History</h2>
                   <div class="flex items-center">
@@ -264,7 +266,10 @@ import { SoundService } from '../../services/sound.service';
     }
   `]
 })
-export class ReversiComponent implements OnInit {
+export class ReversiComponent implements OnInit, AfterViewInit {
+  @ViewChild('gameBoard') gameBoard!: ElementRef;
+  @ViewChild('historyPanel') historyPanel!: ElementRef;
+  boardHeight = 600;
   gameState: GameState;
   lastComputerMove: { row: number; col: number } | null = null;
   lastPlayerMove: { row: number; col: number } | null = null;
@@ -279,13 +284,16 @@ export class ReversiComponent implements OnInit {
     private persistenceService: PersistenceService,
     private soundService: SoundService
   ) {
+    console.log('ReversiComponent constructor called');
     this.gameState = this.gameService.getInitialState();
     this.gameService.getGameState().subscribe(state => {
       this.gameState = state;
     });
+    this.loadScoreboard();
   }
 
   ngOnInit() {
+    console.log('ReversiComponent ngOnInit called');
     // Initialize game with saved difficulty
     const savedDifficulty = this.persistenceService.getDifficulty();
     this.gameService.setDifficulty(savedDifficulty);
@@ -325,6 +333,62 @@ export class ReversiComponent implements OnInit {
       this.previousGameStatus = state.gameStatus;
       this.gameState = state;
     });
+  }
+
+  ngAfterViewInit() {
+    console.log('ReversiComponent ngAfterViewInit called');
+    
+    if (this.gameBoard) {
+      console.log('Game board element found');
+      
+      // Log initial dimensions
+      const board = this.gameBoard.nativeElement;
+      console.log('Initial board dimensions:', {
+        offsetWidth: board.offsetWidth,
+        offsetHeight: board.offsetHeight,
+        clientWidth: board.clientWidth,
+        clientHeight: board.clientHeight
+      });
+
+      // Create a ResizeObserver to watch for size changes
+      const resizeObserver = new ResizeObserver(entries => {
+        console.log('ResizeObserver triggered');
+        
+        for (const entry of entries) {
+          // Since the game board is a square, use its width as the height
+          const newHeight = entry.contentRect.width;
+          console.log('Game board dimensions:', {
+            width: entry.contentRect.width,
+            height: entry.contentRect.height,
+            newHeight,
+            currentHeight: this.boardHeight
+          });
+          
+          if (newHeight !== this.boardHeight) {
+            console.log('Updating height from', this.boardHeight, 'to', newHeight);
+            this.boardHeight = newHeight;
+            
+            // Log history panel dimensions after update
+            setTimeout(() => {
+              if (this.historyPanel) {
+                const panel = this.historyPanel.nativeElement;
+                console.log('History panel dimensions:', {
+                  offsetHeight: panel.offsetHeight,
+                  clientHeight: panel.clientHeight,
+                  styleHeight: panel.style.height
+                });
+              }
+            });
+          }
+        }
+      });
+      
+      // Start observing the game board
+      resizeObserver.observe(this.gameBoard.nativeElement);
+      console.log('Started observing game board element');
+    } else {
+      console.warn('Game board element not found');
+    }
   }
 
   makeMove(row: number, col: number): void {
@@ -411,5 +475,9 @@ export class ReversiComponent implements OnInit {
   resetScores(): void {
     this.scoreboard = { black: 0, white: 0, draws: 0 };
     this.persistenceService.resetScoreboard();
+  }
+
+  loadScoreboard(): void {
+    // Implement the logic to load the scoreboard from persistence
   }
 } 
