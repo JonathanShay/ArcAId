@@ -97,9 +97,11 @@ import { SoundService } from '../../services/sound.service';
             </div>
 
             <div class="game-status mb-6 text-center">
-              <p *ngIf="gameState.gameStatus === 'playing'" class="text-lg text-gray-700 dark:text-gray-300">
+              <p *ngIf="gameState.gameStatus === 'playing'" class="text-lg text-gray-700 dark:text-gray-200">
                 Current Player: <span class="font-bold" [class.text-gray-900]="gameState.currentPlayer === 'B'" 
-                                              [class.text-gray-500]="gameState.currentPlayer === 'W'">
+                                              [class.text-gray-500]="gameState.currentPlayer === 'W'"
+                                              [class.dark:text-white]="gameState.currentPlayer === 'B'"
+                                              [class.dark:text-gray-300]="gameState.currentPlayer === 'W'">
                   {{ gameState.currentPlayer === 'B' ? 'Black' : 'White' }}
                 </span>
               </p>
@@ -151,7 +153,7 @@ import { SoundService } from '../../services/sound.service';
                    [class.w-0]="!isHistoryVisible"
                    [class.p-0]="!isHistoryVisible">
                 <div class="flex items-center justify-between mb-2 flex-shrink-0">
-                  <h2 class="text-lg font-semibold">Game History</h2>
+                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Game History</h2>
                   <div class="flex items-center">
                     <button (click)="copyGameHistory()" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm font-semibold flex items-center gap-2">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16h8M8 12h8m-7 8h6a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -165,13 +167,13 @@ import { SoundService } from '../../services/sound.service';
                        class="mb-2 pb-2 cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50"
                        (mouseenter)="onHistoryHover(entry.move)"
                        (mouseleave)="onHistoryHover(undefined)">
-                    <div class="font-mono text-xs text-gray-700 dark:text-gray-200">Move #{{ i + 1 }}</div>
-                    <div class="text-xs">Player: <span class="font-bold">{{ entry.move?.player === 'B' ? 'Black' : 'White' }}</span></div>
-                    <div class="text-xs" *ngIf="entry.move">Move: <span class="font-mono">({{ entry.move.row }},{{ entry.move.col }})</span></div>
-                    <div class="text-xs">Game Status: <span class="font-mono">{{ entry.gameStatus }}</span></div>
-                    <div class="text-xs">Winner: <span class="font-mono">{{ entry.winner ? (entry.winner === 'B' ? 'Black' : 'White') : '-' }}</span></div>
-                    <div class="text-xs mt-1">Score: <span class="font-mono">B:{{ entry.score.black }} W:{{ entry.score.white }}</span></div>
-                    <hr class="my-2 border-gray-300 dark:border-gray-700" />
+                    <div class="font-mono text-xs text-gray-700 dark:text-gray-100">Move #{{ i + 1 }}</div>
+                    <div class="text-xs text-gray-700 dark:text-gray-100">Player: <span class="font-bold">{{ entry.move?.player === 'B' ? 'Black' : 'White' }}</span></div>
+                    <div class="text-xs text-gray-700 dark:text-gray-100" *ngIf="entry.move">Move: <span class="font-mono">({{ entry.move.row }},{{ entry.move.col }})</span></div>
+                    <div class="text-xs text-gray-700 dark:text-gray-100">Game Status: <span class="font-mono">{{ entry.gameStatus }}</span></div>
+                    <div class="text-xs text-gray-700 dark:text-gray-100">Winner: <span class="font-mono">{{ entry.winner ? (entry.winner === 'B' ? 'Black' : 'White') : '-' }}</span></div>
+                    <div class="text-xs text-gray-700 dark:text-gray-100 mt-1">Score: <span class="font-mono">B:{{ entry.score.black }} W:{{ entry.score.white }}</span></div>
+                    <hr class="my-2 border-gray-300 dark:border-gray-600" />
                   </div>
                 </div>
               </div>
