@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { GameState, Move, Player, CellState } from '../models/game.models';
+import { GameState, Move, Player, CellState, DifficultyLevel } from '../models/game.models';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +15,8 @@ export class GameService {
 
   private gameStateSubject = new BehaviorSubject<GameState>(this.getInitialState());
   private gameStateHistory: (GameState & { move?: Move })[] = [];
+  private gameTimer: any;
+  private startTime: number = 0;
 
   constructor() {
     this.gameStateHistory.push(this.getInitialState());
@@ -39,7 +41,10 @@ export class GameService {
       score: {
         black: 2,
         white: 2
-      }
+      },
+      difficulty: 'medium',
+      moveCount: 0,
+      gameTime: 0
     };
 
     // Calculate initial valid moves
@@ -55,12 +60,25 @@ export class GameService {
     return this.gameStateHistory;
   }
 
+  setDifficulty(difficulty: DifficultyLevel): void {
+    const currentState = this.gameStateSubject.value;
+    this.gameStateSubject.next({
+      ...currentState,
+      difficulty
+    });
+  }
+
   makeMove(row: number, col: number): void {
     const currentState = this.gameStateSubject.value;
     if (currentState.gameStatus !== 'playing') return;
 
     const move = this.validateMove(currentState, row, col);
     if (!move) return;
+
+    // Start timer if this is the first move
+    if (currentState.moveCount === 0) {
+      this.startTimer();
+    }
 
     // Create new board state
     const newBoard = currentState.board.map(row => [...row]);
@@ -80,7 +98,10 @@ export class GameService {
       gameStatus: 'playing',
       winner: null,
       validMoves: [],
-      score: newScore
+      score: newScore,
+      difficulty: currentState.difficulty,
+      moveCount: currentState.moveCount + 1,
+      gameTime: currentState.gameTime
     };
 
     // Calculate valid moves for next player
@@ -96,6 +117,7 @@ export class GameService {
 
       if (currentPlayerMoves.length === 0) {
         // Game is over
+        this.stopTimer();
         newState.gameStatus = 'won';
         newState.winner = newScore.black > newScore.white ? 'B' : 
                          newScore.white > newScore.black ? 'W' : null;
@@ -123,20 +145,129 @@ export class GameService {
     const currentState = this.gameStateSubject.value;
     if (currentState.gameStatus !== 'playing' || currentState.currentPlayer !== 'W') return;
 
-    // Simple AI: Choose the move that flips the most pieces
-    let bestMove = currentState.validMoves[0];
+    let bestMove: { row: number; col: number } | null = null;
+
+    switch (currentState.difficulty) {
+      case 'easy':
+        bestMove = this.getEasyMove(currentState);
+        break;
+      case 'medium':
+        bestMove = this.getMediumMove(currentState);
+        break;
+      case 'hard':
+        bestMove = this.getHardMove(currentState);
+        break;
+    }
+
+    if (bestMove) {
+      // Emit an event that the computer is about to make a move
+      this.gameStateSubject.next({
+        ...currentState,
+        lastComputerMove: bestMove
+      });
+      this.makeMove(bestMove.row, bestMove.col);
+    }
+  }
+
+  private getEasyMove(state: GameState): { row: number; col: number } | null {
+    // Randomly choose from valid moves
+    const validMoves = state.validMoves;
+    if (validMoves.length === 0) return null;
+    return validMoves[Math.floor(Math.random() * validMoves.length)];
+  }
+
+  private getMediumMove(state: GameState): { row: number; col: number } | null {
+    // Choose move that flips the most pieces
+    let bestMove = state.validMoves[0];
     let maxFlips = 0;
 
-    for (const move of currentState.validMoves) {
-      const flippedPieces = this.getFlippedPieces(currentState, move.row, move.col);
+    for (const move of state.validMoves) {
+      const flippedPieces = this.getFlippedPieces(state, move.row, move.col);
       if (flippedPieces.length > maxFlips) {
         maxFlips = flippedPieces.length;
         bestMove = move;
       }
     }
 
-    if (bestMove) {
-      this.makeMove(bestMove.row, bestMove.col);
+    return bestMove;
+  }
+
+  private getHardMove(state: GameState): { row: number; col: number } | null {
+    // Evaluate each move using a scoring system
+    let bestScore = -Infinity;
+    let bestMove = state.validMoves[0];
+
+    for (const move of state.validMoves) {
+      const score = this.evaluateMove(state, move);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
+
+    return bestMove;
+  }
+
+  private evaluateMove(state: GameState, move: { row: number; col: number }): number {
+    // Corner moves are highly valued
+    if ((move.row === 0 || move.row === 7) && (move.col === 0 || move.col === 7)) {
+      return 100;
+    }
+
+    // Edge moves are good
+    if (move.row === 0 || move.row === 7 || move.col === 0 || move.col === 7) {
+      return 50;
+    }
+
+    // Moves that flip more pieces are better
+    const flippedPieces = this.getFlippedPieces(state, move.row, move.col);
+    const flipScore = flippedPieces.length * 10;
+
+    // Avoid moves that give opponent access to corners
+    const opponentNextMoves = this.getOpponentNextMoves(state, move);
+    const cornerAccessPenalty = opponentNextMoves.filter(m => 
+      (m.row === 0 || m.row === 7) && (m.col === 0 || m.col === 7)
+    ).length * -30;
+
+    return flipScore + cornerAccessPenalty;
+  }
+
+  private getOpponentNextMoves(state: GameState, move: { row: number; col: number }): { row: number; col: number }[] {
+    // Create a copy of the state and make the move
+    const newBoard = state.board.map(row => [...row]);
+    const flippedPieces = this.getFlippedPieces(state, move.row, move.col);
+    flippedPieces.forEach(({ row, col }) => {
+      newBoard[row][col] = state.currentPlayer;
+    });
+    newBoard[move.row][move.col] = state.currentPlayer;
+
+    // Calculate opponent's valid moves
+    const opponent = state.currentPlayer === 'B' ? 'W' : 'B';
+    const opponentState: GameState = {
+      ...state,
+      board: newBoard,
+      currentPlayer: opponent
+    };
+
+    return this.calculateValidMoves(opponentState);
+  }
+
+  private startTimer(): void {
+    this.startTime = Date.now();
+    this.gameTimer = setInterval(() => {
+      const currentState = this.gameStateSubject.value;
+      const elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+      this.gameStateSubject.next({
+        ...currentState,
+        gameTime: elapsedTime
+      });
+    }, 1000);
+  }
+
+  private stopTimer(): void {
+    if (this.gameTimer) {
+      clearInterval(this.gameTimer);
+      this.gameTimer = null;
     }
   }
 
@@ -223,9 +354,11 @@ export class GameService {
   }
 
   resetGame(): void {
+    const currentDifficulty = this.gameStateSubject.value.difficulty;
     const initialState = this.getInitialState();
-    this.gameStateHistory = [initialState];
+    initialState.difficulty = currentDifficulty;
     this.gameStateSubject.next(initialState);
+    this.gameStateHistory = [initialState];
   }
 
   undoLastTurn(): void {
