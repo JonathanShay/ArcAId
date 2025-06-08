@@ -26,6 +26,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@types/highlight.js": "^9.12.4",
+    "angular-cli-ghpages": "^2.0.3",
     "highlight.js": "^11.11.1",
     "marked": "^9.0.0",
     "marked-highlight": "^2.2.1",
